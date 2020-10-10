@@ -1,3 +1,4 @@
+const { addMinutes, isBefore } = require('date-fns');
 const User = require('../models/User');
 
 class UserController {
@@ -33,6 +34,32 @@ class UserController {
     user.token = token;
 
     await user.save();
+
+    return res.json(user);
+  }
+
+  async show(req, res) {
+    const authHeader = req.headers.authentication;
+
+    if (!authHeader) {
+      return res.status(401).json({ mensagem: 'Não autorizado' });
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(400).json({ mensagem: 'Usuário não encontrado' });
+    }
+
+    const [, token] = authHeader.split(' ');
+
+    if (user.token !== token) {
+      return res.status(401).json({ mensagem: 'Não autorizado' });
+    }
+
+    if (isBefore(addMinutes(user.ultimo_login, 30), Date.now())) {
+      return res.status(401).json({ mensagem: 'Sessão inválida' });
+    }
 
     return res.json(user);
   }
