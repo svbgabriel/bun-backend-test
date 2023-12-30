@@ -1,8 +1,9 @@
-const { addMinutes, isBefore } = require('date-fns');
-const User = require('../models/User');
+import { addMinutes, isBefore } from 'date-fns';
+import type { Request, Response } from 'express';
+import User from '../models/User';
 
 class UserController {
-  async store(req, res) {
+  async store(req: Request, res: Response) {
     const { email } = req.body;
 
     if (await User.findOne({ email })) {
@@ -16,7 +17,7 @@ class UserController {
     return res.json(user);
   }
 
-  async update(req, res) {
+  async update(req: Request, res: Response) {
     const { email, senha } = req.body;
 
     const user = await User.findOne({ email });
@@ -30,7 +31,7 @@ class UserController {
     }
 
     const token = User.generateToken(email);
-    user.ultimo_login = Date.now();
+    user.ultimo_login = new Date();
     user.token = token;
 
     await user.save();
@@ -38,8 +39,17 @@ class UserController {
     return res.json(user);
   }
 
-  async show(req, res) {
-    const authHeader = req.headers.authentication;
+  async show(req: Request, res: Response) {
+    const headers = req.headers;
+
+    let authHeader: string | undefined;
+    if (!headers.authentication) {
+      authHeader = undefined;
+    } else if (Array.isArray(authHeader)) {
+      authHeader = headers.authentication[0];
+    } else {
+      authHeader = headers.authentication as string;
+    }
 
     if (!authHeader) {
       return res.status(401).json({ mensagem: 'Não autorizado' });
@@ -65,4 +75,4 @@ class UserController {
   }
 }
 
-module.exports = new UserController();
+export default new UserController();
