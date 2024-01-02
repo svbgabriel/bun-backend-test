@@ -1,6 +1,6 @@
 import { addMinutes, isBefore } from "date-fns";
 import type { Request, Response } from "express";
-import User from "../models/User";
+import User from "../model/User";
 
 class UserController {
   async store(req: Request, res: Response) {
