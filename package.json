@@ -1,7 +1,7 @@
 {
-  "name": "sky-backend-test",
+  "name": "bun-backend-test",
   "version": "1.0.0",
-  "description": "",
+  "description": "A small project reworked to study bun",
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun --watch src/index.ts",
