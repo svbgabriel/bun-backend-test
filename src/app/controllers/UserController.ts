@@ -1,13 +1,13 @@
-import { addMinutes, isBefore } from 'date-fns';
-import type { Request, Response } from 'express';
-import User from '../models/User';
+import { addMinutes, isBefore } from "date-fns";
+import type { Request, Response } from "express";
+import User from "../models/User";
 
 class UserController {
   async store(req: Request, res: Response) {
     const { email } = req.body;
 
     if (await User.findOne({ email })) {
-      return res.status(400).json({ mensagem: 'E-mail já existente' });
+      return res.status(400).json({ mensagem: "E-mail já existente" });
     }
 
     const token = User.generateToken(email);
@@ -23,11 +23,11 @@ class UserController {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ mensagem: 'Usuário e/ou senha inválidos' });
+      return res.status(401).json({ mensagem: "Usuário e/ou senha inválidos" });
     }
 
     if (!(await user.compareHash(senha))) {
-      return res.status(401).json({ mensagem: 'Usuário e/ou senha inválidos' });
+      return res.status(401).json({ mensagem: "Usuário e/ou senha inválidos" });
     }
 
     const token = User.generateToken(email);
@@ -52,23 +52,23 @@ class UserController {
     }
 
     if (!authHeader) {
-      return res.status(401).json({ mensagem: 'Não autorizado' });
+      return res.status(401).json({ mensagem: "Não autorizado" });
     }
 
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(400).json({ mensagem: 'Usuário não encontrado' });
+      return res.status(400).json({ mensagem: "Usuário não encontrado" });
     }
 
-    const [, token] = authHeader.split(' ');
+    const [, token] = authHeader.split(" ");
 
     if (user.token !== token) {
-      return res.status(401).json({ mensagem: 'Não autorizado' });
+      return res.status(401).json({ mensagem: "Não autorizado" });
     }
 
     if (isBefore(addMinutes(user.ultimo_login, 30), Date.now())) {
-      return res.status(401).json({ mensagem: 'Sessão inválida' });
+      return res.status(401).json({ mensagem: "Sessão inválida" });
     }
 
     return res.json(user);

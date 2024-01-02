@@ -1,8 +1,8 @@
-import dotenv from 'dotenv';
-import express from 'express';
-import mongoose from 'mongoose';
-import config from './config';
-import routes from './routes';
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import config from "./config";
+import routes from "./routes";
 
 dotenv.config();
 
