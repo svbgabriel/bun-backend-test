@@ -10,6 +10,8 @@ const server = express();
 server.use(express.json());
 server.use(routes);
 
-mongoose.connect(config.databaseUri);
+mongoose.connect(config.databaseUri, {
+  dbName: "bun-test",
+});
 
 export default server;
