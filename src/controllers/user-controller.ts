@@ -17,7 +17,16 @@ export const userController = new Elysia({ prefix: "/users" })
 
       const user = await User.create({ ...body, token });
 
-      return user;
+      return {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        phones: user.phones,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+        lastLogin: user.lastLogin.toISOString(),
+        token,
+      };
     },
     {
       body: t.Object({
@@ -31,8 +40,24 @@ export const userController = new Elysia({ prefix: "/users" })
           })
         ),
       }),
+      response: t.Object({
+        id: t.String(),
+        name: t.String(),
+        email: t.String(),
+        phones: t.Array(
+          t.Object({
+            number: t.String(),
+            code: t.String(),
+          })
+        ),
+        createdAt: t.String(),
+        updatedAt: t.String(),
+        lastLogin: t.String(),
+        token: t.String(),
+      }),
       detail: {
         tags: ["Users"],
+        summary: "Creates a new user",
       },
     }
   )
@@ -59,15 +84,40 @@ export const userController = new Elysia({ prefix: "/users" })
 
       await user.save();
 
-      return user;
+      return {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        phones: user.phones,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+        lastLogin: user.lastLogin.toISOString(),
+        token,
+      };
     },
     {
       body: t.Object({
         email: t.String(),
         password: t.String(),
       }),
+      response: t.Object({
+        id: t.String(),
+        name: t.String(),
+        email: t.String(),
+        phones: t.Array(
+          t.Object({
+            number: t.String(),
+            code: t.String(),
+          })
+        ),
+        createdAt: t.String(),
+        updatedAt: t.String(),
+        lastLogin: t.String(),
+        token: t.String(),
+      }),
       detail: {
         tags: ["Users"],
+        summary: "Update the token of a user",
       },
     }
   )
@@ -98,7 +148,16 @@ export const userController = new Elysia({ prefix: "/users" })
         throw { message: "Sessão inválida" };
       }
 
-      return user;
+      return {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        phones: user.phones,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+        lastLogin: user.lastLogin.toISOString(),
+        token,
+      };
     },
     {
       params: t.Object({
@@ -107,8 +166,24 @@ export const userController = new Elysia({ prefix: "/users" })
       headers: t.Object({
         authentication: t.String(),
       }),
+      response: t.Object({
+        id: t.String(),
+        name: t.String(),
+        email: t.String(),
+        phones: t.Array(
+          t.Object({
+            number: t.String(),
+            code: t.String(),
+          })
+        ),
+        createdAt: t.String(),
+        updatedAt: t.String(),
+        lastLogin: t.String(),
+        token: t.String(),
+      }),
       detail: {
         tags: ["Users"],
+        summary: "Get the info about a user",
       },
     }
   );
