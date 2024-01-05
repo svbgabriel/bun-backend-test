@@ -1,5 +1,18 @@
-Sign up - POST https://sky-backend-test-svb.herokuapp.com/users
+# A bun backend test
 
-Sign in - PUT https://sky-backend-test-svb.herokuapp.com/users
+This's a small project reworked to study the javascript/typescript runtime bun and it's ecosystyem.
 
-Buscar usuário - GET https://sky-backend-test-svb.herokuapp.com/users
+## Stack
+
+- bun
+- typescript
+- elysia
+- MongoDB
+
+## Development
+
+To start the development server run:
+
+```bash
+bun run dev
+```
