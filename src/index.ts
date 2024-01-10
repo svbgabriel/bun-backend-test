@@ -1,14 +1,10 @@
 import { Elysia } from "elysia";
 import { swagger } from "@elysiajs/swagger";
-import mongoose from "mongoose";
 import config from "./config";
+import "./database/db.setup";
 import { userController } from "./controllers/user-controller";
 
-mongoose.connect(config.databaseUri, {
-  dbName: "bun-test",
-});
-
-export const server = new Elysia()
+export const app = new Elysia()
   .use(
     swagger({
       documentation: {

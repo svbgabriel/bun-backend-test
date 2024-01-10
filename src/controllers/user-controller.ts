@@ -3,6 +3,56 @@ import { addMinutes, isBefore } from "date-fns";
 import User from "../models/User";
 
 export const userController = new Elysia({ prefix: "/users" })
+  .model({
+    createUserResponse: t.Object({
+      id: t.String(),
+      name: t.String(),
+      email: t.String(),
+      phones: t.Array(
+        t.Object({
+          number: t.String(),
+          code: t.String(),
+        })
+      ),
+      createdAt: t.String(),
+      updatedAt: t.String(),
+      lastLogin: t.String(),
+      token: t.String(),
+    }),
+    getUserResponse: t.Object({
+      id: t.String(),
+      name: t.String(),
+      email: t.String(),
+      phones: t.Array(
+        t.Object({
+          number: t.String(),
+          code: t.String(),
+        })
+      ),
+      createdAt: t.String(),
+      updatedAt: t.String(),
+      lastLogin: t.String(),
+      token: t.String(),
+    }),
+    updateUserResponse: t.Object({
+      id: t.String(),
+      name: t.String(),
+      email: t.String(),
+      phones: t.Array(
+        t.Object({
+          number: t.String(),
+          code: t.String(),
+        })
+      ),
+      createdAt: t.String(),
+      updatedAt: t.String(),
+      lastLogin: t.String(),
+      token: t.String(),
+    }),
+    error: t.Object({
+      message: t.String(),
+    }),
+  })
   .post(
     "/",
     async ({ body, set }) => {
@@ -40,21 +90,10 @@ export const userController = new Elysia({ prefix: "/users" })
           })
         ),
       }),
-      response: t.Object({
-        id: t.String(),
-        name: t.String(),
-        email: t.String(),
-        phones: t.Array(
-          t.Object({
-            number: t.String(),
-            code: t.String(),
-          })
-        ),
-        createdAt: t.String(),
-        updatedAt: t.String(),
-        lastLogin: t.String(),
-        token: t.String(),
-      }),
+      response: {
+        200: "createUserResponse",
+        400: "error",
+      },
       detail: {
         tags: ["Users"],
         summary: "Creates a new user",
@@ -100,21 +139,10 @@ export const userController = new Elysia({ prefix: "/users" })
         email: t.String(),
         password: t.String(),
       }),
-      response: t.Object({
-        id: t.String(),
-        name: t.String(),
-        email: t.String(),
-        phones: t.Array(
-          t.Object({
-            number: t.String(),
-            code: t.String(),
-          })
-        ),
-        createdAt: t.String(),
-        updatedAt: t.String(),
-        lastLogin: t.String(),
-        token: t.String(),
-      }),
+      response: {
+        200: "updateUserResponse",
+        401: "error",
+      },
       detail: {
         tags: ["Users"],
         summary: "Update the token of a user",
@@ -124,15 +152,10 @@ export const userController = new Elysia({ prefix: "/users" })
   .get(
     "/:id",
     async ({ params: { id }, headers: { authentication }, set }) => {
-      if (!authentication) {
-        set.status = 401;
-        throw { message: "Não autorizado" };
-      }
-
       const user = await User.findById(id);
 
       if (!user) {
-        set.status = 400;
+        set.status = 404;
         throw { message: "Usuário não encontrado" };
       }
 
@@ -166,21 +189,12 @@ export const userController = new Elysia({ prefix: "/users" })
       headers: t.Object({
         authentication: t.String(),
       }),
-      response: t.Object({
-        id: t.String(),
-        name: t.String(),
-        email: t.String(),
-        phones: t.Array(
-          t.Object({
-            number: t.String(),
-            code: t.String(),
-          })
-        ),
-        createdAt: t.String(),
-        updatedAt: t.String(),
-        lastLogin: t.String(),
-        token: t.String(),
-      }),
+      response: {
+        200: "getUserResponse",
+        400: "error",
+        401: "error",
+        404: "error",
+      },
       detail: {
         tags: ["Users"],
         summary: "Get the info about a user",
