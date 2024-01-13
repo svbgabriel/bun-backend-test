@@ -138,3 +138,65 @@ describe("test create user", () => {
     expect(data?.id).toBe("6597ff1e291b810814587e5b");
   });
 });
+describe("test update user", () => {
+  it("should get 401 when user is not found", async () => {
+    User.findOne = jest.fn().mockResolvedValue(undefined);
+
+    const { status, error } = await api.users[""].put({
+      email: "test@test.com",
+      password: "",
+    });
+
+    expect(status).toBe(401);
+    expect(error?.value.message).toBe("Usuário e/ou senha inválidos");
+  });
+  it("should get 401 if password does not match", async () => {
+    const user = {
+      _id: "6597ff1e291b810814587e5b",
+      name: "User",
+      email: "test@test.com",
+      password: "otherValue",
+      token: "notarealvalue",
+      phones: [],
+      lastLogin: addMinutes(Date.now(), 31),
+      createdAt: parseJSON(formatISO(Date.now())),
+      updatedAt: parseJSON(formatISO(Date.now())),
+      compareHash: () => false,
+    };
+
+    User.findOne = jest.fn().mockResolvedValue(user);
+
+    const { status, error } = await api.users[""].put({
+      email: "test@test.com",
+      password: "random",
+    });
+
+    expect(status).toBe(401);
+    expect(error?.value.message).toBe("Usuário e/ou senha inválidos");
+  });
+  it("should get 200 when all checks are ok", async () => {
+    const user = {
+      _id: "6597ff1e291b810814587e5b",
+      name: "User",
+      email: "test@test.com",
+      password: "otherValue",
+      token: "notarealvalue",
+      phones: [],
+      lastLogin: parseJSON(formatISO(Date.now())),
+      createdAt: parseJSON(formatISO(Date.now())),
+      updatedAt: parseJSON(formatISO(Date.now())),
+      compareHash: () => true,
+      save: () => {},
+    };
+
+    User.findOne = jest.fn().mockResolvedValue(user);
+
+    const { status, data } = await api.users[""].put({
+      email: "test@test.com",
+      password: "random",
+    });
+
+    expect(status).toBe(200);
+    expect(data?.id).toBe("6597ff1e291b810814587e5b");
+  });
+});
