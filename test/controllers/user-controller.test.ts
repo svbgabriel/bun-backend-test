@@ -3,7 +3,7 @@ import { edenTreaty } from "@elysiajs/eden";
 import { Elysia } from "elysia";
 import { subMinutes, formatISO, parseJSON, addMinutes } from "date-fns";
 import { app } from "../../src/index";
-import User from "../../src/models/User";
+import User from "../../src/models/user";
 
 const server = new Elysia().use(app);
 

@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { addMinutes, isBefore } from "date-fns";
-import User from "../models/User";
+import User from "../models/user";
 
 export const userController = new Elysia({ prefix: "/users" })
   .model({
