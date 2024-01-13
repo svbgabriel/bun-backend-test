@@ -84,3 +84,57 @@ describe("test get user", () => {
     expect(data?.id).toBe("6597ff1e291b810814587e5b");
   });
 });
+
+describe("test create user", () => {
+  it("should get 400 when email is already used", async () => {
+    const user = {
+      name: "User",
+      email: "test@test.com",
+      password: "",
+      token: "notarealvalue",
+      phones: [],
+    };
+
+    User.findOne = jest.fn().mockResolvedValue(user);
+
+    const { status, error } = await api.users[""].post({
+      name: "User",
+      email: "test@test.com",
+      password: "",
+      phones: [],
+    });
+
+    expect(status).toBe(400);
+    expect(error?.value.message).toBe("E-mail já existente");
+  });
+  it("should get 200 when all checks are ok", async () => {
+    process.env.SECRET = "SOME_RANDOM_SECRET";
+    process.env.TTL = "1800";
+
+    const request = {
+      name: "User",
+      email: "test@test.com",
+      password: "notreal",
+      phones: [],
+    };
+
+    const createdUser = {
+      _id: "6597ff1e291b810814587e5b",
+      name: "User",
+      email: "test@test.com",
+      token: "notarealvalue",
+      phones: [],
+      lastLogin: parseJSON(formatISO(Date.now())),
+      createdAt: parseJSON(formatISO(Date.now())),
+      updatedAt: parseJSON(formatISO(Date.now())),
+    };
+
+    User.findOne = jest.fn().mockResolvedValue(undefined);
+    User.create = jest.fn().mockResolvedValue(createdUser);
+
+    const { status, data } = await api.users[""].post(request);
+
+    expect(status).toBe(200);
+    expect(data?.id).toBe("6597ff1e291b810814587e5b");
+  });
+});
