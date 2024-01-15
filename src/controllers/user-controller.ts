@@ -60,7 +60,7 @@ export const userController = new Elysia({ prefix: "/users" })
 
       if (await User.findOne({ email })) {
         set.status = 400;
-        throw { message: "E-mail já existente" };
+        throw { message: "This e-mail is already in use" };
       }
 
       const token = User.generateToken(email);
@@ -109,12 +109,12 @@ export const userController = new Elysia({ prefix: "/users" })
 
       if (!user) {
         set.status = 401;
-        throw { message: "Usuário e/ou senha inválidos" };
+        throw { message: "Invalid username and/or password" };
       }
 
       if (!(await user.compareHash(password))) {
         set.status = 401;
-        throw { message: "Usuário e/ou senha inválidos" };
+        throw { message: "Invalid username and/or password" };
       }
 
       const token = User.generateToken(email);
@@ -156,19 +156,19 @@ export const userController = new Elysia({ prefix: "/users" })
 
       if (!user) {
         set.status = 404;
-        throw { message: "Usuário não encontrado" };
+        throw { message: "User not found" };
       }
 
       const [, token] = authentication.split(" ");
 
       if (user.token !== token) {
         set.status = 401;
-        throw { message: "Não autorizado" };
+        throw { message: "Not authorized" };
       }
 
       if (isBefore(addMinutes(user.lastLogin, 30), Date.now())) {
         set.status = 401;
-        throw { message: "Sessão inválida" };
+        throw { message: "Invalid session" };
       }
 
       return {

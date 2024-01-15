@@ -21,7 +21,7 @@ describe("test get user", () => {
     });
 
     expect(status).toBe(401);
-    expect(error?.value.message).toBe("Não autorizado");
+    expect(error?.value.message).toBe("Not authorized");
   });
   it("should get 404 when the user was not found", async () => {
     User.findById = jest.fn().mockResolvedValue(undefined);
@@ -33,7 +33,7 @@ describe("test get user", () => {
     });
 
     expect(status).toBe(404);
-    expect(error?.value.message).toBe("Usuário não encontrado");
+    expect(error?.value.message).toBe("User not found");
   });
   it("should get 401 when token is too old", async () => {
     const user = {
@@ -57,7 +57,7 @@ describe("test get user", () => {
     });
 
     expect(status).toBe(401);
-    expect(error?.value.message).toBe("Sessão inválida");
+    expect(error?.value.message).toBe("Invalid session");
   });
   it("should get 200 when all checks are ok", async () => {
     const user = {
@@ -105,7 +105,7 @@ describe("test create user", () => {
     });
 
     expect(status).toBe(400);
-    expect(error?.value.message).toBe("E-mail já existente");
+    expect(error?.value.message).toBe("This e-mail is already in use");
   });
   it("should get 200 when all checks are ok", async () => {
     process.env.SECRET = "SOME_RANDOM_SECRET";
@@ -148,7 +148,7 @@ describe("test update user", () => {
     });
 
     expect(status).toBe(401);
-    expect(error?.value.message).toBe("Usuário e/ou senha inválidos");
+    expect(error?.value.message).toBe("Invalid username and/or password");
   });
   it("should get 401 if password does not match", async () => {
     const user = {
@@ -172,7 +172,7 @@ describe("test update user", () => {
     });
 
     expect(status).toBe(401);
-    expect(error?.value.message).toBe("Usuário e/ou senha inválidos");
+    expect(error?.value.message).toBe("Invalid username and/or password");
   });
   it("should get 200 when all checks are ok", async () => {
     const user = {
