@@ -1,8 +1,8 @@
-import { Elysia, t } from "elysia";
-import { addMinutes, isBefore } from "date-fns";
-import User from "../models/user";
+import { Elysia, t } from 'elysia'
+import { addMinutes, isBefore } from 'date-fns'
+import User from '../models/user'
 
-export const userController = new Elysia({ prefix: "/users" })
+export const userController = new Elysia({ prefix: '/users' })
   .model({
     createUserResponse: t.Object({
       id: t.String(),
@@ -12,7 +12,7 @@ export const userController = new Elysia({ prefix: "/users" })
         t.Object({
           number: t.String(),
           code: t.String(),
-        })
+        }),
       ),
       createdAt: t.String(),
       updatedAt: t.String(),
@@ -27,7 +27,7 @@ export const userController = new Elysia({ prefix: "/users" })
         t.Object({
           number: t.String(),
           code: t.String(),
-        })
+        }),
       ),
       createdAt: t.String(),
       updatedAt: t.String(),
@@ -42,7 +42,7 @@ export const userController = new Elysia({ prefix: "/users" })
         t.Object({
           number: t.String(),
           code: t.String(),
-        })
+        }),
       ),
       createdAt: t.String(),
       updatedAt: t.String(),
@@ -54,17 +54,17 @@ export const userController = new Elysia({ prefix: "/users" })
     }),
   })
   .post(
-    "/",
+    '/',
     async ({ body, status }) => {
-      const { email } = body;
+      const { email } = body
 
       if (await User.findOne({ email })) {
-        return status(400, { message: "This e-mail is already in use" });
+        return status(400, { message: 'This e-mail is already in use' })
       }
 
-      const token = User.generateToken(email);
+      const token = User.generateToken(email)
 
-      const user = await User.create({ ...body, token });
+      const user = await User.create({ ...body, token })
 
       return {
         id: user._id.toString(),
@@ -75,7 +75,7 @@ export const userController = new Elysia({ prefix: "/users" })
         updatedAt: user.updatedAt.toISOString(),
         lastLogin: user.lastLogin.toISOString(),
         token,
-      };
+      }
     },
     {
       body: t.Object({
@@ -86,39 +86,39 @@ export const userController = new Elysia({ prefix: "/users" })
           t.Object({
             number: t.String(),
             code: t.String(),
-          })
+          }),
         ),
       }),
       response: {
-        200: "createUserResponse",
-        400: "error",
+        200: 'createUserResponse',
+        400: 'error',
       },
       detail: {
-        tags: ["Users"],
-        summary: "Creates a new user",
+        tags: ['Users'],
+        summary: 'Creates a new user',
       },
-    }
+    },
   )
   .put(
-    "/",
+    '/',
     async ({ body, status }) => {
-      const { email, password } = body;
+      const { email, password } = body
 
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email })
 
       if (!user) {
-        return status(401, { message: "Invalid username and/or password" });
+        return status(401, { message: 'Invalid username and/or password' })
       }
 
       if (!(await user.compareHash(password))) {
-        return status(401, { message: "Invalid username and/or password" });
+        return status(401, { message: 'Invalid username and/or password' })
       }
 
-      const token = User.generateToken(email);
-      user.lastLogin = new Date();
-      user.token = token;
+      const token = User.generateToken(email)
+      user.lastLogin = new Date()
+      user.token = token
 
-      await user.save();
+      await user.save()
 
       return {
         id: user._id.toString(),
@@ -129,7 +129,7 @@ export const userController = new Elysia({ prefix: "/users" })
         updatedAt: user.updatedAt.toISOString(),
         lastLogin: user.lastLogin.toISOString(),
         token,
-      };
+      }
     },
     {
       body: t.Object({
@@ -137,38 +137,38 @@ export const userController = new Elysia({ prefix: "/users" })
         password: t.String(),
       }),
       response: {
-        200: "updateUserResponse",
-        401: "error",
+        200: 'updateUserResponse',
+        401: 'error',
       },
       detail: {
-        tags: ["Users"],
-        summary: "Update the token of a user",
+        tags: ['Users'],
+        summary: 'Update the token of a user',
       },
-    }
+    },
   )
   .get(
-    "/:id",
+    '/:id',
     async ({ params: { id }, headers: { authentication }, status }) => {
-      const user = await User.findById(id);
+      const user = await User.findById(id)
 
       if (!user) {
-        return status(404, { message: "User not found" });
+        return status(404, { message: 'User not found' })
       }
 
-      const parts = authentication.split(" ");
+      const parts = authentication.split(' ')
 
-      if (parts.length !== 2 || parts[0] !== "Bearer") {
-        return status(401, { message: "Not authorized" });
+      if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return status(401, { message: 'Not authorized' })
       }
 
-      const token = parts[1];
+      const token = parts[1]
 
       if (user.token !== token) {
-        return status(401, { message: "Not authorized" });
+        return status(401, { message: 'Not authorized' })
       }
 
       if (isBefore(addMinutes(user.lastLogin, 30), Date.now())) {
-        return status(401, { message: "Invalid session" });
+        return status(401, { message: 'Invalid session' })
       }
 
       return {
@@ -180,7 +180,7 @@ export const userController = new Elysia({ prefix: "/users" })
         updatedAt: user.updatedAt.toISOString(),
         lastLogin: user.lastLogin.toISOString(),
         token,
-      };
+      }
     },
     {
       params: t.Object({
@@ -190,14 +190,14 @@ export const userController = new Elysia({ prefix: "/users" })
         authentication: t.String(),
       }),
       response: {
-        200: "getUserResponse",
-        400: "error",
-        401: "error",
-        404: "error",
+        200: 'getUserResponse',
+        400: 'error',
+        401: 'error',
+        404: 'error',
       },
       detail: {
-        tags: ["Users"],
-        summary: "Get the info about a user",
+        tags: ['Users'],
+        summary: 'Get the info about a user',
       },
-    }
-  );
+    },
+  )

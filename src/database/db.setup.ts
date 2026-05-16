@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
-import config from "../config";
+import mongoose from 'mongoose'
+import config from '../config'
 
 mongoose.connect(config.databaseUri, {
-  dbName: "bun-test",
-});
+  dbName: 'bun-test',
+})
 
-export default mongoose;
+export default mongoose
