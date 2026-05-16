@@ -1,4 +1,4 @@
-import { Schema, Model, model } from 'mongoose'
+import { Schema, type Model, model } from 'mongoose'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import config from '../config'
