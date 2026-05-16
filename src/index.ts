@@ -1,12 +1,12 @@
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
 import config from "./config";
 import "./database/db.setup";
 import { userController } from "./controllers/user-controller";
+import openapi, { fromTypes } from "@elysia/openapi";
 
 export const app = new Elysia()
   .use(
-    swagger({
+    openapi({
       documentation: {
         info: {
           title: "User API",
@@ -20,6 +20,7 @@ export const app = new Elysia()
           },
         ],
       },
+      references: fromTypes()
     })
   )
   .use(userController)

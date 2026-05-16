@@ -1,202 +1,237 @@
 import { describe, it, expect, jest } from "bun:test";
 import { edenTreaty } from "@elysiajs/eden";
 import { Elysia } from "elysia";
-import { subMinutes, formatISO, parseJSON, addMinutes } from "date-fns";
+import { subMinutes, addMinutes } from "date-fns";
 import { app } from "../../src/index";
 import User from "../../src/models/user";
 
 const server = new Elysia().use(app);
-
 const api = edenTreaty<typeof server>("http://localhost:3000");
 
-describe("test get user", () => {
-  it("should get 401 when get info without authentication", async () => {
-    const user = { _id: "6597ff1e291b810814587e5b", token: "not a real value" };
-    User.findById = jest.fn().mockResolvedValue(user);
+describe("UserController Tests", () => {
+  describe("GET /users/:id", () => {
+    it("should return 401 when authentication header is missing or malformed", async () => {
+      // Arrange
+      const userId = "6597ff1e291b810814587e5b";
+      const user = { _id: userId, token: "some-token" };
+      User.findById = jest.fn().mockResolvedValue(user);
 
-    const { status, error } = await api.users["6597ff1e291b810814587e5b"].get({
-      $headers: {
-        authentication: "",
-      },
+      // Act
+      const { status, error } = await api.users[userId].get({
+        $headers: { authentication: "" },
+      });
+
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Not authorized");
     });
 
-    expect(status).toBe(401);
-    expect(error?.value.message).toBe("Not authorized");
-  });
-  it("should get 404 when the user was not found", async () => {
-    User.findById = jest.fn().mockResolvedValue(undefined);
+    it("should return 401 when token format is invalid (missing Bearer prefix)", async () => {
+      // Arrange
+      const userId = "6597ff1e291b810814587e5b";
+      const user = { _id: userId, token: "some-token" };
+      User.findById = jest.fn().mockResolvedValue(user);
 
-    const { status, error } = await api.users["6597ff1e291b810814587e5b"].get({
-      $headers: {
-        authentication: "",
-      },
+      // Act
+      const { status, error } = await api.users[userId].get({
+        $headers: { authentication: "some-token" },
+      });
+
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Not authorized");
     });
 
-    expect(status).toBe(404);
-    expect(error?.value.message).toBe("User not found");
-  });
-  it("should get 401 when token is too old", async () => {
-    const user = {
-      _id: "6597ff1e291b810814587e5b",
-      name: "User",
-      email: "test@test.com",
-      password: "",
-      token: "notarealvalue",
-      phones: [],
-      lastLogin: subMinutes(Date.now(), 31),
-      createdAt: parseJSON(formatISO(Date.now())),
-      updatedAt: parseJSON(formatISO(Date.now())),
-    };
+    it("should return 401 when token does not match user's token", async () => {
+      // Arrange
+      const userId = "6597ff1e291b810814587e5b";
+      const user = { _id: userId, token: "correct-token" };
+      User.findById = jest.fn().mockResolvedValue(user);
 
-    User.findById = jest.fn().mockResolvedValue(user);
+      // Act
+      const { status, error } = await api.users[userId].get({
+        $headers: { authentication: "Bearer wrong-token" },
+      });
 
-    const { status, error } = await api.users["6597ff1e291b810814587e5b"].get({
-      $headers: {
-        authentication: "Bearer notarealvalue",
-      },
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Not authorized");
     });
 
-    expect(status).toBe(401);
-    expect(error?.value.message).toBe("Invalid session");
-  });
-  it("should get 200 when all checks are ok", async () => {
-    const user = {
-      _id: "6597ff1e291b810814587e5b",
-      name: "User",
-      email: "test@test.com",
-      password: "",
-      token: "notarealvalue",
-      phones: [],
-      lastLogin: addMinutes(Date.now(), 31),
-      createdAt: parseJSON(formatISO(Date.now())),
-      updatedAt: parseJSON(formatISO(Date.now())),
-    };
+    it("should return 404 when user is not found", async () => {
+      // Arrange
+      const userId = "nonexistent-id";
+      User.findById = jest.fn().mockResolvedValue(undefined);
 
-    User.findById = jest.fn().mockResolvedValue(user);
+      // Act
+      const { status, error } = await api.users[userId].get({
+        $headers: { authentication: "Bearer some-token" },
+      });
 
-    const { status, data } = await api.users["6597ff1e291b810814587e5b"].get({
-      $headers: {
-        authentication: "Bearer notarealvalue",
-      },
+      // Assert
+      expect(status).toBe(404);
+      expect(error?.value.message).toBe("User not found");
     });
 
-    expect(status).toBe(200);
-    expect(data?.id).toBe("6597ff1e291b810814587e5b");
-  });
-});
+    it("should return 401 when session is expired (over 30 minutes)", async () => {
+      // Arrange
+      const userId = "6597ff1e291b810814587e5b";
+      const user = {
+        _id: userId,
+        name: "User",
+        email: "test@test.com",
+        token: "valid-token",
+        phones: [],
+        lastLogin: subMinutes(new Date(), 31),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      User.findById = jest.fn().mockResolvedValue(user);
 
-describe("test create user", () => {
-  it("should get 400 when email is already used", async () => {
-    const user = {
-      name: "User",
-      email: "test@test.com",
-      password: "",
-      token: "notarealvalue",
-      phones: [],
-    };
+      // Act
+      const { status, error } = await api.users[userId].get({
+        $headers: { authentication: "Bearer valid-token" },
+      });
 
-    User.findOne = jest.fn().mockResolvedValue(user);
-
-    const { status, error } = await api.users[""].post({
-      name: "User",
-      email: "test@test.com",
-      password: "",
-      phones: [],
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Invalid session");
     });
 
-    expect(status).toBe(400);
-    expect(error?.value.message).toBe("This e-mail is already in use");
+    it("should return 200 when all checks pass", async () => {
+      // Arrange
+      const userId = "6597ff1e291b810814587e5b";
+      const user = {
+        _id: userId,
+        name: "User",
+        email: "test@test.com",
+        token: "valid-token",
+        phones: [],
+        lastLogin: addMinutes(new Date(), 10),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      User.findById = jest.fn().mockResolvedValue(user);
+
+      // Act
+      const { status, data } = await api.users[userId].get({
+        $headers: { authentication: "Bearer valid-token" },
+      });
+
+      // Assert
+      expect(status).toBe(200);
+      expect(data?.id).toBe(userId);
+    });
   });
-  it("should get 200 when all checks are ok", async () => {
-    process.env.SECRET = "SOME_RANDOM_SECRET";
-    process.env.TTL = "1800";
 
-    const request = {
-      name: "User",
-      email: "test@test.com",
-      password: "notreal",
-      phones: [],
-    };
+  describe("POST /users", () => {
+    it("should return 400 when email is already in use", async () => {
+      // Arrange
+      const requestData = {
+        name: "User",
+        email: "existing@test.com",
+        password: "password123",
+        phones: [],
+      };
+      User.findOne = jest.fn().mockResolvedValue({ email: "existing@test.com" });
 
-    const createdUser = {
-      _id: "6597ff1e291b810814587e5b",
-      name: "User",
-      email: "test@test.com",
-      token: "notarealvalue",
-      phones: [],
-      lastLogin: parseJSON(formatISO(Date.now())),
-      createdAt: parseJSON(formatISO(Date.now())),
-      updatedAt: parseJSON(formatISO(Date.now())),
-    };
+      // Act
+      const { status, error } = await api.users[""].post(requestData);
 
-    User.findOne = jest.fn().mockResolvedValue(undefined);
-    User.create = jest.fn().mockResolvedValue(createdUser);
-
-    const { status, data } = await api.users[""].post(request);
-
-    expect(status).toBe(200);
-    expect(data?.id).toBe("6597ff1e291b810814587e5b");
-  });
-});
-describe("test update user", () => {
-  it("should get 401 when user is not found", async () => {
-    User.findOne = jest.fn().mockResolvedValue(undefined);
-
-    const { status, error } = await api.users[""].put({
-      email: "test@test.com",
-      password: "",
+      // Assert
+      expect(status).toBe(400);
+      expect(error?.value.message).toBe("This e-mail is already in use");
     });
 
-    expect(status).toBe(401);
-    expect(error?.value.message).toBe("Invalid username and/or password");
+    it("should return 200 and create user when data is valid", async () => {
+      // Arrange
+      const requestData = {
+        name: "New User",
+        email: "new@test.com",
+        password: "password123",
+        phones: [],
+      };
+      const createdUser = {
+        _id: "6597ff1e291b810814587e5b",
+        name: requestData.name,
+        email: requestData.email,
+        token: "generated-token",
+        phones: [],
+        lastLogin: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      User.findOne = jest.fn().mockResolvedValue(undefined);
+      User.create = jest.fn().mockResolvedValue(createdUser);
+      User.generateToken = jest.fn().mockReturnValue("generated-token");
+
+      // Act
+      const { status, data } = await api.users[""].post(requestData);
+
+      // Assert
+      expect(status).toBe(200);
+      expect(data?.id).toBe("6597ff1e291b810814587e5b");
+      expect(data?.email).toBe(requestData.email);
+    });
   });
-  it("should get 401 if password does not match", async () => {
-    const user = {
-      _id: "6597ff1e291b810814587e5b",
-      name: "User",
-      email: "test@test.com",
-      password: "otherValue",
-      token: "notarealvalue",
-      phones: [],
-      lastLogin: addMinutes(Date.now(), 31),
-      createdAt: parseJSON(formatISO(Date.now())),
-      updatedAt: parseJSON(formatISO(Date.now())),
-      compareHash: () => false,
-    };
 
-    User.findOne = jest.fn().mockResolvedValue(user);
+  describe("PUT /users", () => {
+    it("should return 401 when user is not found during login", async () => {
+      // Arrange
+      const loginData = { email: "nonexistent@test.com", password: "password" };
+      User.findOne = jest.fn().mockResolvedValue(undefined);
 
-    const { status, error } = await api.users[""].put({
-      email: "test@test.com",
-      password: "random",
+      // Act
+      const { status, error } = await api.users[""].put(loginData);
+
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Invalid username and/or password");
     });
 
-    expect(status).toBe(401);
-    expect(error?.value.message).toBe("Invalid username and/or password");
-  });
-  it("should get 200 when all checks are ok", async () => {
-    const user = {
-      _id: "6597ff1e291b810814587e5b",
-      name: "User",
-      email: "test@test.com",
-      password: "otherValue",
-      token: "notarealvalue",
-      phones: [],
-      lastLogin: parseJSON(formatISO(Date.now())),
-      createdAt: parseJSON(formatISO(Date.now())),
-      updatedAt: parseJSON(formatISO(Date.now())),
-      compareHash: () => true,
-      save: () => {},
-    };
+    it("should return 401 when password does not match", async () => {
+      // Arrange
+      const loginData = { email: "test@test.com", password: "wrong-password" };
+      const user = {
+        _id: "id",
+        email: "test@test.com",
+        compareHash: async () => false,
+      };
+      User.findOne = jest.fn().mockResolvedValue(user);
 
-    User.findOne = jest.fn().mockResolvedValue(user);
+      // Act
+      const { status, error } = await api.users[""].put(loginData);
 
-    const { status, data } = await api.users[""].put({
-      email: "test@test.com",
-      password: "random",
+      // Assert
+      expect(status).toBe(401);
+      expect(error?.value.message).toBe("Invalid username and/or password");
     });
 
-    expect(status).toBe(200);
-    expect(data?.id).toBe("6597ff1e291b810814587e5b");
+    it("should return 200 and update lastLogin/token on successful login", async () => {
+      // Arrange
+      const loginData = { email: "test@test.com", password: "correct-password" };
+      const user = {
+        _id: "6597ff1e291b810814587e5b",
+        name: "Test User",
+        email: "test@test.com",
+        phones: [],
+        lastLogin: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        compareHash: async () => true,
+        save: jest.fn().mockResolvedValue(true),
+      };
+      User.findOne = jest.fn().mockResolvedValue(user);
+      User.generateToken = jest.fn().mockReturnValue("new-token");
+
+      // Act
+      const { status, data } = await api.users[""].put(loginData);
+
+      // Assert
+      expect(status).toBe(200);
+      expect(data?.id).toBe("6597ff1e291b810814587e5b");
+      expect(data?.token).toBe("new-token");
+      expect(user.save).toHaveBeenCalled();
+    });
   });
 });

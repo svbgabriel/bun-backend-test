@@ -55,12 +55,11 @@ export const userController = new Elysia({ prefix: "/users" })
   })
   .post(
     "/",
-    async ({ body, set }) => {
+    async ({ body, status }) => {
       const { email } = body;
 
       if (await User.findOne({ email })) {
-        set.status = 400;
-        throw { message: "This e-mail is already in use" };
+        return status(400, { message: "This e-mail is already in use" });
       }
 
       const token = User.generateToken(email);
@@ -102,19 +101,17 @@ export const userController = new Elysia({ prefix: "/users" })
   )
   .put(
     "/",
-    async ({ body, set }) => {
+    async ({ body, status }) => {
       const { email, password } = body;
 
       const user = await User.findOne({ email });
 
       if (!user) {
-        set.status = 401;
-        throw { message: "Invalid username and/or password" };
+        return status(401, { message: "Invalid username and/or password" });
       }
 
       if (!(await user.compareHash(password))) {
-        set.status = 401;
-        throw { message: "Invalid username and/or password" };
+        return status(401, { message: "Invalid username and/or password" });
       }
 
       const token = User.generateToken(email);
@@ -151,24 +148,27 @@ export const userController = new Elysia({ prefix: "/users" })
   )
   .get(
     "/:id",
-    async ({ params: { id }, headers: { authentication }, set }) => {
+    async ({ params: { id }, headers: { authentication }, status }) => {
       const user = await User.findById(id);
 
       if (!user) {
-        set.status = 404;
-        throw { message: "User not found" };
+        return status(404, { message: "User not found" });
       }
 
-      const [, token] = authentication.split(" ");
+      const parts = authentication.split(" ");
+
+      if (parts.length !== 2 || parts[0] !== "Bearer") {
+        return status(401, { message: "Not authorized" });
+      }
+
+      const token = parts[1];
 
       if (user.token !== token) {
-        set.status = 401;
-        throw { message: "Not authorized" };
+        return status(401, { message: "Not authorized" });
       }
 
       if (isBefore(addMinutes(user.lastLogin, 30), Date.now())) {
-        set.status = 401;
-        throw { message: "Invalid session" };
+        return status(401, { message: "Invalid session" });
       }
 
       return {

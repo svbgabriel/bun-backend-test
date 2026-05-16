@@ -1,14 +1,12 @@
-version: "3.1"
-
 services:
   mongo:
     container_name: bun-backend-test-db
-    image: mongo:7.0.2
+    image: mongo:8.2
     restart: always
     volumes:
       - db_data:/data/db
     ports:
-      - "28018:27017"
+      - "28000:27017"
 
 volumes:
   db_data:
