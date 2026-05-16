@@ -1,6 +1,6 @@
-import { Schema, type Model, model } from 'mongoose'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { type Model, model, Schema } from 'mongoose'
 import config from '../config'
 
 interface IUser {

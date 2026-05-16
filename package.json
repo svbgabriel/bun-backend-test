@@ -8,7 +8,8 @@
     "start": "NODE_ENV=production bun dist/index.js",
     "test": "bun test",
     "format": "bunx --bun @biomejs/biome format --write ./src",
-    "lint": "bunx --bun @biomejs/biome lint --write ./src"
+    "lint": "bunx --bun @biomejs/biome lint --write ./src",
+    "check": "bunx --bun @biomejs/biome check --write ./src"
   },
   "license": "MIT",
   "dependencies": {

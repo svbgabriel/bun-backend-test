@@ -1,8 +1,8 @@
 import { Elysia } from 'elysia'
 import config from './config'
 import './database/db.setup'
-import { userController } from './controllers/user-controller'
 import openapi, { fromTypes } from '@elysia/openapi'
+import { userController } from './controllers/user-controller'
 
 export const app = new Elysia()
   .use(
