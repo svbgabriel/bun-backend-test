@@ -15,7 +15,7 @@
   "dependencies": {
     "@elysia/openapi": "^1.4.15",
     "bcryptjs": "^3.0.3",
-    "date-fns": "^4.1.0",
+    "date-fns": "^4.3.0",
     "elysia": "1.4.28",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2"
