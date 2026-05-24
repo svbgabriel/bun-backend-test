@@ -1,12 +1,10 @@
 import { describe, it, expect, jest } from "bun:test";
-import { edenTreaty } from "@elysiajs/eden";
-import { Elysia } from "elysia";
+import { treaty } from "@elysiajs/eden";
 import { subMinutes, addMinutes } from "date-fns";
 import { app } from "../../src/index";
 import User from "../../src/models/user";
 
-const server = new Elysia().use(app);
-const api = edenTreaty<typeof server>("http://localhost:3000");
+const api = treaty(app)
 
 describe("UserController Tests", () => {
   describe("GET /users/:id", () => {
@@ -17,8 +15,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, error } = await api.users[userId].get({
-        $headers: { authentication: "" },
+      const { status, error } = await api.users({id: userId}).get({
+        headers: { authentication: "" },
       });
 
       // Assert
@@ -33,8 +31,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, error } = await api.users[userId].get({
-        $headers: { authentication: "some-token" },
+      const { status, error } = await api.users({id: userId}).get({
+        headers: { authentication: "some-token" },
       });
 
       // Assert
@@ -49,8 +47,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, error } = await api.users[userId].get({
-        $headers: { authentication: "Bearer wrong-token" },
+      const { status, error } = await api.users({id: userId}).get({
+        headers: { authentication: "Bearer wrong-token" },
       });
 
       // Assert
@@ -64,8 +62,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(undefined);
 
       // Act
-      const { status, error } = await api.users[userId].get({
-        $headers: { authentication: "Bearer some-token" },
+      const { status, error } = await api.users({id: userId}).get({
+        headers: { authentication: "Bearer some-token" },
       });
 
       // Assert
@@ -89,8 +87,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, error } = await api.users[userId].get({
-        $headers: { authentication: "Bearer valid-token" },
+      const { status, error } = await api.users({id: userId}).get({
+        headers: { authentication: "Bearer valid-token" },
       });
 
       // Assert
@@ -114,8 +112,8 @@ describe("UserController Tests", () => {
       User.findById = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, data } = await api.users[userId].get({
-        $headers: { authentication: "Bearer valid-token" },
+      const { status, data } = await api.users({id: userId}).get({
+        headers: { authentication: "Bearer valid-token" },
       });
 
       // Assert
@@ -136,7 +134,7 @@ describe("UserController Tests", () => {
       User.findOne = jest.fn().mockResolvedValue({ email: "existing@test.com" });
 
       // Act
-      const { status, error } = await api.users[""].post(requestData);
+      const { status, error } = await api.users.post(requestData);
 
       // Assert
       expect(status).toBe(400);
@@ -166,7 +164,7 @@ describe("UserController Tests", () => {
       User.generateToken = jest.fn().mockReturnValue("generated-token");
 
       // Act
-      const { status, data } = await api.users[""].post(requestData);
+      const { status, data } = await api.users.post(requestData);
 
       // Assert
       expect(status).toBe(200);
@@ -182,7 +180,7 @@ describe("UserController Tests", () => {
       User.findOne = jest.fn().mockResolvedValue(undefined);
 
       // Act
-      const { status, error } = await api.users[""].put(loginData);
+      const { status, error } = await api.users.put(loginData);
 
       // Assert
       expect(status).toBe(401);
@@ -200,7 +198,7 @@ describe("UserController Tests", () => {
       User.findOne = jest.fn().mockResolvedValue(user);
 
       // Act
-      const { status, error } = await api.users[""].put(loginData);
+      const { status, error } = await api.users.put(loginData);
 
       // Assert
       expect(status).toBe(401);
@@ -225,7 +223,7 @@ describe("UserController Tests", () => {
       User.generateToken = jest.fn().mockReturnValue("new-token");
 
       // Act
-      const { status, data } = await api.users[""].put(loginData);
+      const { status, data } = await api.users.put(loginData);
 
       // Assert
       expect(status).toBe(200);
