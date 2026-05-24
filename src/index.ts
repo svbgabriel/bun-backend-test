@@ -20,8 +20,13 @@ export const app = new Elysia()
           },
         ],
       },
-      references: fromTypes(),
+      references: fromTypes(
+        process.env.NODE_ENV === 'production' ? 'dist/index.d.ts' : 'src/index.ts',
+      ),
+      path: '/docs',
     }),
   )
   .use(userController)
   .listen(config.port)
+
+export type App = typeof app
